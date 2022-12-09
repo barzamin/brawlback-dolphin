@@ -41,6 +41,42 @@ std::vector<u8> read_vector_from_disk(std::string file_path)
   return data;
 }
 
+
+const char* bit_rep[16] = {
+        "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
+        "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111",
+};
+void print_byte(u8 byte) { INFO_LOG(BRAWLBACK, "%s%s", bit_rep[byte >> 4], bit_rep[byte & 0x0F]); }
+void print_half(u16 half)
+{
+    u8 byte0 = half >> 8;
+    u8 byte1 = half & 0xFF;
+
+    print_byte(byte0);
+    print_byte(byte1);
+}
+
+void printInputs
+        (const BrawlbackPad& pad)
+{
+    INFO_LOG(BRAWLBACK, " -- Pad --\n");
+    INFO_LOG(BRAWLBACK, "StickX: %hhu ", pad.stickX);
+    INFO_LOG(BRAWLBACK, "StickY: %hhu ", pad.stickY);
+    INFO_LOG(BRAWLBACK, "CStickX: %hhu ", pad.cStickX);
+    INFO_LOG(BRAWLBACK, "CStickY: %hhu\n", pad.cStickY);
+    INFO_LOG(BRAWLBACK, "Buttons: ");
+    INFO_LOG(BRAWLBACK, "_buttons: 0x%x\n", pad._buttons);
+    INFO_LOG(BRAWLBACK, "buttons: 0x%x\n", pad.buttons);
+    INFO_LOG(BRAWLBACK, "holdButtons: 0x%x\n", pad.holdButtons);
+    INFO_LOG(BRAWLBACK, "rapidFireButtons: 0x%x\n", pad.rapidFireButtons);
+    INFO_LOG(BRAWLBACK, "releasedButtons: 0x%x\n", pad.releasedButtons);
+    INFO_LOG(BRAWLBACK, "newPressedButtons: 0x%x\n", pad.newPressedButtons);
+    // print_half(pad.newPressedButtons);
+    INFO_LOG(BRAWLBACK, " LTrigger: %u    RTrigger %u\n", pad.LTrigger, pad.RTrigger);
+    //OSReport(" ---------\n");
+}
+
+
 CEXIBrawlback::CEXIBrawlback()
 {
   INFO_LOG(BRAWLBACK, "------- %s\n", SConfig::GetInstance().GetGameID().c_str());
@@ -306,8 +342,11 @@ void CEXIBrawlback::handleLocalPadData(u8* data)
   u8 playerIdx = playerFramedata.playerIdx;
   playerFramedata.frame = frame;  // properly switched endianness
 
-  if (frame == GAME_START_FRAME)
+  // TODO: is this really necessary?
+  if (frame >= GAME_START_FRAME && !this->hasGameStarted)
   {
+    INFO_LOG(BRAWLBACK, "Pushing empty frames for game start!\n");
+   
     // push framedatas for first few delay frames
     for (int i = GAME_START_FRAME; i < FRAME_DELAY; i++)
     {
@@ -315,6 +354,7 @@ void CEXIBrawlback::handleLocalPadData(u8* data)
           std::make_unique<PlayerFrameData>(CreateBlankPlayerFrameData(i, playerIdx)));
       this->localPlayerFrameData.push_back(
           std::make_unique<PlayerFrameData>(CreateBlankPlayerFrameData(i, playerIdx)));
+      
     }
     this->hasGameStarted = true;
   }
@@ -561,7 +601,7 @@ void CEXIBrawlback::storeLocalInputs(PlayerFrameData* localPlayerFramedata) {
     }
     else
     {
-      // WARN_LOG(BRAWLBACK, "Didn't push local framedata for frame %u\n", pFD->frame);
+      WARN_LOG(BRAWLBACK, "Didn't push local framedata for frame %u\n", pFD->frame);
     }
 }
 
@@ -675,33 +715,6 @@ void CEXIBrawlback::ProcessIndividualRemoteFrameData(PlayerFrameData* framedata)
     
 
 }
-const char* bit_rep[16] = {
-    "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
-    "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111",
-};
-void print_byte(u8 byte) { INFO_LOG(BRAWLBACK, "%s%s", bit_rep[byte >> 4], bit_rep[byte & 0x0F]); }
-void print_half(u16 half)
-{
-  u8 byte0 = half >> 8;
-  u8 byte1 = half & 0xFF;
-
-  print_byte(byte0);
-  print_byte(byte1);
-}
-
-void printInputs
-(const BrawlbackPad& pad)
-{
-  INFO_LOG(BRAWLBACK, " -- Pad --\n");
-  INFO_LOG(BRAWLBACK, "StickX: %hhu ", pad.stickX);
-  INFO_LOG(BRAWLBACK, "StickY: %hhu ", pad.stickY);
-  INFO_LOG(BRAWLBACK, "CStickX: %hhu ", pad.cStickX);
-  INFO_LOG(BRAWLBACK, "CStickY: %hhu\n", pad.cStickY);
-  INFO_LOG(BRAWLBACK, "Buttons: ");
-  print_half(pad.newPressedButtons);
-  INFO_LOG(BRAWLBACK, " LTrigger: %u    RTrigger %u\n", pad.LTrigger, pad.RTrigger);
-  //OSReport(" ---------\n"); 
-}
 
 void CEXIBrawlback::ProcessRemoteFrameData(PlayerFrameData* framedatas, u8 numFramedatas_u8)
 {
@@ -717,15 +730,6 @@ void CEXIBrawlback::ProcessRemoteFrameData(PlayerFrameData* framedatas, u8 numFr
   BroadcastFramedataAck(frame, playerIdx, this->netplay.get(), this->server);
   // ---------------------
 
-  // Just print for other player
-  if(this->isHost && playerIdx == 1) {
-    //INFO_LOG(BRAWLBACK, "Received remote inputs from %i", playerIdx);
-    if (mostRecentFramedata->sysPad.newPressedButtons > 0)
-    {
-      printInputs(mostRecentFramedata->sysPad);
-
-    }
-  }
   // if (!this->remotePlayerFrameData[playerIdx].empty())
   // INFO_LOG(BRAWLBACK, "Received remote inputs. Head frame %u  received head frame %u\n",
   // this->remotePlayerFrameData[playerIdx].back()->frame, frame);
