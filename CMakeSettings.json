@@ -11,7 +11,18 @@
       "variables": [
         {
           "name": "CMAKE_PREFIX_PATH",
-          "value": "${workspaceRoot}\\Externals\\Qt\\Qt6.3.0\\x64"
+          "value": "${workspaceRoot}\\Externals\\Qt\\Qt6.3.0\\x64",
+          "type": "STRING"
+        },
+        {
+          "name": "SD_CARD_LOCATION",
+          "value": "C:\\Users\\jwhit\\Documents\\sd.raw",
+          "type": "STRING"
+        },
+        {
+          "name": "DUPLICATE_BUILD",
+          "value": "true",
+          "type": "BOOL"
         }
       ]
     },
@@ -26,7 +37,18 @@
       "variables": [
         {
           "name": "CMAKE_PREFIX_PATH",
-          "value": "${workspaceRoot}\\Externals\\Qt\\Qt6.3.0\\x64"
+          "value": "${workspaceRoot}\\Externals\\Qt\\Qt6.3.0\\x64",
+          "type": "STRING"
+        },
+        {
+          "name": "SD_CARD_LOCATION",
+          "value": "C:\\Users\\jwhit\\Documents\\sd.raw",
+          "type": "STRING"
+        },
+        {
+          "name": "DUPLICATE_BUILD",
+          "value": "true",
+          "type": "BOOL"
         }
       ]
     },
@@ -41,15 +63,28 @@
       "variables": [
         {
           "name": "CMAKE_PREFIX_PATH",
-          "value": "${workspaceRoot}\\Externals\\Qt\\Qt6.3.0\\ARM64"
+          "value": "${workspaceRoot}\\Externals\\Qt\\Qt6.3.0\\ARM64",
+          "type": "STRING"
         },
         {
           "name": "CMAKE_SYSTEM_NAME",
-          "value": "Windows"
+          "value": "Windows",
+          "type": "STRING"
         },
         {
           "name": "CMAKE_SYSTEM_PROCESSOR",
-          "value": "aarch64"
+          "value": "aarch64",
+          "type": "STRING"
+        },
+        {
+          "name": "SD_CARD_LOCATION",
+          "value": "C:\\Users\\jwhit\\Documents\\sd.raw",
+          "type": "STRING"
+        },
+        {
+          "name": "DUPLICATE_BUILD",
+          "value": "true",
+          "type": "BOOL"
         }
       ]
     },
@@ -64,15 +99,28 @@
       "variables": [
         {
           "name": "CMAKE_PREFIX_PATH",
-          "value": "${workspaceRoot}\\Externals\\Qt\\Qt6.3.0\\ARM64"
+          "value": "${workspaceRoot}\\Externals\\Qt\\Qt6.3.0\\ARM64",
+          "type": "STRING"
         },
         {
           "name": "CMAKE_SYSTEM_NAME",
-          "value": "Windows"
+          "value": "Windows",
+          "type": "STRING"
         },
         {
           "name": "CMAKE_SYSTEM_PROCESSOR",
-          "value": "aarch64"
+          "value": "aarch64",
+          "type": "STRING"
+        },
+        {
+          "name": "SD_CARD_LOCATION",
+          "value": "C:\\Users\\jwhit\\Documents\\sd.raw",
+          "type": "STRING"
+        },
+        {
+          "name": "DUPLICATE_BUILD",
+          "value": "true",
+          "type": "BOOL"
         }
       ]
     }

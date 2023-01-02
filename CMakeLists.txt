@@ -148,6 +148,7 @@ endif()
 # here.  You must run "make install" to install these to the proper location
 # as defined above.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Binaries)
+set(TOOLS_DIR ${CMAKE_SOURCE_DIR}/Tools)
 
 if (WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Binary)

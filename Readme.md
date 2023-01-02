@@ -81,11 +81,15 @@ recommended to be used. Git and Windows 11 SDK must be installed when building.
 The "Release" solution configuration includes performance optimizations for the best user experience but complicates debugging Dolphin.
 The "Debug" solution configuration is significantly slower, more verbose and less permissive but makes debugging Dolphin easier.
 
+To duplicate the build for networking testing, set the User Macros SDCardLoc and EnableDuplication under Base.Dolphin to the sd card file path used for testing and true accordingly.
+
 ### CMake
 
 Should be able to build with cmake using editor of your choice (CLion, VS Code, etc.)
 
 An error may be encountered when cmake tries to find Qt. To fix, add `-DCMAKE_PREFIX_PATH=<path to repo>/Externals/Qt/Qt6.3.0/x64/lib/cmake/` to your cmake command. (replace <path to repo> with actual path)
+
+To duplicate the build for networking testing, set the CMakeSettings variables in the root SD_CARD_LOCATION and DUPLICATE_BUILD to the sd card file path used for testing and true accordingly.
 
 ## Building for Linux and macOS
 

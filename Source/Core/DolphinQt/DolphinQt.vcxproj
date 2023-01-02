@@ -449,5 +449,7 @@
     <Copy SourceFiles="@(DataTxtFiles)" DestinationFolder="$(BinaryOutputDir)" Condition="!Exists('$(BinaryOutputDir)%(Filename)%(DataTxtFiles.Extension)') OR $([System.DateTime]::Parse('%(ModifiedTime)').Ticks) &gt; $([System.IO.File]::GetLastWriteTime('$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(DataTxtFiles.Extension)').Ticks)" />
     <Message Text="Copy: @(BinaryFiles) -&gt; $(BinaryOutputDir)" Importance="High" />
     <Copy SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinaryOutputDir)" />
+	<Message Condition="$(EnableDuplication)" Text="Duplicate Build" Importance="High" />
+	<Exec Condition="$(EnableDuplication)" Command="python $(DolphinRootDir)Tools/duplicate-build.py --sdCardFile $(SDCardLoc) --binaryOutputPath $(BinaryOutputDir)"/>
   </Target>
 </Project>
