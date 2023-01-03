@@ -480,6 +480,9 @@ if(WIN32)
                                  --no-opengl-sw
                                  "$<TARGET_FILE:dolphin-emu>"
   )
+	add_custom_command(TARGET dolphin-emu POST_BUILD
+		COMMAND type nul > ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/portable.txt
+	)
 	if(DUPLICATE_BUILD)
 		find_package(Python3 COMPONENTS Interpreter REQUIRED)
 		add_custom_command(TARGET dolphin-emu POST_BUILD

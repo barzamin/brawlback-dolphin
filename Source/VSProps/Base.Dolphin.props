@@ -2,8 +2,9 @@
 <Project>
   <!--This file is included by Dolphin code only-->
   <PropertyGroup Label="UserMacros">
-    <EnableDuplication>true</EnableDuplication>
-    <SDCardLoc>C:\Users\jwhit\Documents\sd.raw</SDCardLoc>
+    <EnableDuplication>false</EnableDuplication>
+    <SDCardLoc>
+    </SDCardLoc>
   </PropertyGroup>
   <PropertyGroup>
     <TargetName Condition="'$(ConfigurationType)'=='Application'">$(ProjectName)$(TargetSuffix)</TargetName>

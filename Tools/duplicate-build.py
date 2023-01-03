@@ -1,4 +1,4 @@
-import os, shutil, argparse, sys
+import os, shutil, argparse, sys, subprocess, time
 from pathlib import Path
 
 if __name__ == '__main__':
@@ -14,23 +14,29 @@ if __name__ == '__main__':
 
   shutil.copytree(binaryLocation, binaryLocation + '/../x64 (2)')
 
-  sdCardPath = os.path.abspath(args.sdCardFile)
-  sdCardFileName = Path(sdCardPath).stem
-  secondSDCardPath = os.path.dirname(sdCardPath) + "/" + sdCardFileName + "2.raw"
-  if os.path.exists(secondSDCardPath):
-    os.remove(secondSDCardPath)
-  shutil.copyfile(sdCardPath, secondSDCardPath)
+  if len(args.sdCardFile.strip()) != 0:
+    sdCardPath = os.path.abspath(args.sdCardFile)
+    sdCardFileName = Path(sdCardPath).stem
+    secondSDCardPath = os.path.dirname(sdCardPath) + "/" + sdCardFileName + "2.raw"
+    if os.path.exists(secondSDCardPath):
+      os.remove(secondSDCardPath)
+    shutil.copyfile(sdCardPath, secondSDCardPath)
 
-  data = None
-  with open(binaryLocation + '/../x64 (2)/User/Config/Dolphin.ini', 'r') as file:
-    data = file.readlines()
+    data = None
+    dolphinConfigLocation = os.path.abspath(binaryLocation + '/../x64 (2)/User/Config/Dolphin.ini')
+    if not os.path.exists(dolphinConfigLocation):
+      subprocess.Popen([binaryLocation + '/../x64 (2)/dolphin.exe'])
+      time.sleep(3)
+      subprocess.call("TASKKILL /F /IM dolphin.exe", shell=True)
+    with open(dolphinConfigLocation, 'r') as file:
+      data = file.readlines()
 
-  sdCardFilePathChanged = False
-  for i in range(0, len(data)):
-    if 'WiiSDCardPath' in data[i]:
-      sdCardFilePathChanged = True
-      data[i] = 'WiiSDCardPath = ' + secondSDCardPath + '\n'
+    sdCardFilePathChanged = False
+    for i in range(0, len(data)):
+      if 'WiiSDCardPath' in data[i]:
+        sdCardFilePathChanged = True
+        data[i] = 'WiiSDCardPath = ' + secondSDCardPath + '\n'
 
-  if sdCardFilePathChanged:
-    with open(binaryLocation + '/../x64 (2)/User/Config/Dolphin.ini', 'w') as file:
-      file.writelines(data)
+    if sdCardFilePathChanged:
+      with open(dolphinConfigLocation, 'w') as file:
+        file.writelines(data)

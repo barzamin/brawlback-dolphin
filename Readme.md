@@ -81,7 +81,7 @@ recommended to be used. Git and Windows 11 SDK must be installed when building.
 The "Release" solution configuration includes performance optimizations for the best user experience but complicates debugging Dolphin.
 The "Debug" solution configuration is significantly slower, more verbose and less permissive but makes debugging Dolphin easier.
 
-To duplicate the build for networking testing, set the User Macros SDCardLoc and EnableDuplication under Base.Dolphin to the sd card file path used for testing and true accordingly.
+To duplicate the build for networking testing, set the User Macros SDCardLoc and EnableDuplication under `Source/VSProps/Base.Dolphin.props` to the sd card file path used for testing and true accordingly.
 
 ### CMake
 
