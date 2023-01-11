@@ -82,6 +82,22 @@ bool IOFile::Open(const std::string& filename, const char openmode[])
   return m_good;
 }
 
+bool IOFile::OpenShare(const std::string& filename, const char openmode[])
+{
+  Close();
+
+#ifdef _WIN32
+  m_file = _tfsopen(UTF8ToTStr(filename).c_str(), UTF8ToTStr(openmode).c_str(), _SH_DENYNO);
+  m_good = m_file != NULL;
+#else
+  m_file = std::fopen(filename.c_str(), openmode);
+
+  m_good = m_file != nullptr;
+#endif
+
+  return m_good;
+}
+
 bool IOFile::Close()
 {
   if (!IsOpen() || 0 != std::fclose(m_file))

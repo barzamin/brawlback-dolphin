@@ -90,14 +90,14 @@ void SDIOSlot0Device::EventNotify()
 void SDIOSlot0Device::OpenInternal()
 {
   const std::string filename = File::GetUserPath(F_WIISDCARDIMAGE_IDX);
-  m_card.Open(filename, "r+b");
+  m_card.OpenShare(filename, "r+b");
   if (!m_card)
   {
     WARN_LOG_FMT(IOS_SD, "Failed to open SD Card image, trying to create a new 128 MB image...");
     if (Common::SDCardCreate(128, filename))
     {
       INFO_LOG_FMT(IOS_SD, "Successfully created {}", filename);
-      m_card.Open(filename, "r+b");
+      m_card.OpenShare(filename, "r+b");
     }
     if (!m_card)
     {

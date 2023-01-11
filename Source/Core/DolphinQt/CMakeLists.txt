@@ -486,7 +486,7 @@ if(WIN32)
 	if(DUPLICATE_BUILD)
 		find_package(Python3 COMPONENTS Interpreter REQUIRED)
 		add_custom_command(TARGET dolphin-emu POST_BUILD
-			COMMAND ${Python3_EXECUTABLE} ${TOOLS_DIR}/duplicate-build.py --sdCardFile ${SD_CARD_LOCATION} --binaryOutputPath ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+			COMMAND ${Python3_EXECUTABLE} ${TOOLS_DIR}/duplicate-build.py --binaryOutputPath ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 		)
 	endif()
 endif()

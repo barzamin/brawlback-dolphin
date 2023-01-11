@@ -451,6 +451,6 @@
     <Copy SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinaryOutputDir)" />
 		<Exec Command="type nul > $(BinaryOutputDir)/portable.txt"/>
 	  <Message Condition="$(EnableDuplication)" Text="Duplicate Build" Importance="High" />
-	  <Exec Condition="$(EnableDuplication)" Command="python $(DolphinRootDir)Tools/duplicate-build.py --sdCardFile $(SDCardLoc) --binaryOutputPath $(BinaryOutputDir)"/>
+	  <Exec Condition="$(EnableDuplication)" Command="python $(DolphinRootDir)Tools/duplicate-build.py --binaryOutputPath $(BinaryOutputDir)"/>
   </Target>
 </Project>

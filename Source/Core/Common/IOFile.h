@@ -41,6 +41,7 @@ public:
   void Swap(IOFile& other) noexcept;
 
   bool Open(const std::string& filename, const char openmode[]);
+  bool OpenShare(const std::string& filename, const char openmode[]);
   bool Close();
 
   template <typename T>
