@@ -43,7 +43,9 @@ private:
   void serializeReplay(const Replay& replay);
   void handleReplaysStruct(u8* payload);
   void handleEndOfReplay();
-  void handleGetNextFrame(u8* payload, int index);
+  std::optional<Replay> loadNextFrame(int frameNumber, json indexJson);
+  void handleLoadFrames();
+  void handleGetNextFrame(u8* payload);
   void handleNumReplays();
   void handleGetStartReplay(u8* payload);
 
@@ -65,6 +67,9 @@ private:
   u8 curIndex;
   json curReplayJson;
   std::string curReplayName;
+  std::vector<std::vector<u8>> replays;
+  std::vector<Replay> frames;
+  u32 startFrame;
   // -------------------------------
 
   // --- Net

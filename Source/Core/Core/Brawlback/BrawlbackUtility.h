@@ -74,6 +74,8 @@ namespace Brawlback {
       CMD_GET_NUM_REPLAYS = 24,
       CMD_SET_CUR_INDEX = 25,
       CMD_GET_START_REPLAY = 26,
+      CMD_BAD_FRAME = 27,
+      CMD_LOAD_FRAMES = 28,
 
       CMD_MATCH_END = 4,
       CMD_SET_MATCH_SELECTIONS = 6,
