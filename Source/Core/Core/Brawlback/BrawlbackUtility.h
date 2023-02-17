@@ -173,16 +173,17 @@ namespace Brawlback {
 
     inline bool isInputsEqual(const BrawlbackPad& p1, const BrawlbackPad& p2) {
         // TODO: this code is duplicated on the .cpp make it dry or I don't know
+        bool _buttons = p1._buttons == p2._buttons;
         bool buttons = p1.buttons == p2.buttons;
         bool holdButtons = p1.holdButtons == p2.holdButtons;
         bool rapidFireButtons = p1.rapidFireButtons == p2.rapidFireButtons;
         bool releasedButtons = p1.releasedButtons == p2.releasedButtons;
         bool newPressedButtons = p1.newPressedButtons == p2.newPressedButtons;
         bool triggers = p1.LTrigger == p2.LTrigger && p1.RTrigger == p2.RTrigger;
+        bool analogTriggers = p1.LAnalogue == p2.LAnalogue && p1.RAnalogue == p2.RAnalogue;
         bool analogSticks = p1.stickX == p2.stickX && p1.stickY == p2.stickY;
         bool cSticks = p1.cStickX == p2.cStickX && p1.cStickY == p2.cStickY;
-        return buttons && holdButtons && rapidFireButtons && releasedButtons && newPressedButtons && analogSticks && cSticks && triggers;
-
+        return _buttons && buttons && holdButtons && rapidFireButtons && releasedButtons && newPressedButtons && analogSticks && cSticks && triggers && analogTriggers;
         //return memcmp(&p1, &p2, sizeof(BrawlbackPad)) == 0;
     }
 
@@ -191,7 +192,12 @@ namespace Brawlback {
         ret.frame = frame;
         ret.playerIdx = pIdx;
         std::default_random_engine generator = std::default_random_engine((s32)Common::Timer::NowUs());
-        ret.pad.buttons = (u16)((generator() % 65535));
+        ret.pad._buttons = (u16)((generator() % 65535));
+        ret.pad.buttons = ret.pad._buttons;
+        ret.pad.holdButtons = 0;
+        ret.pad.rapidFireButtons = 0;
+        ret.pad.releasedButtons = 0;
+        ret.pad.newPressedButtons = 0;
         //ret.pad.stickX = (u8)(127-generator() % (127*2));
         ret.pad.stickX = 0;
         ret.pad.stickY = (u8)(127-generator() % (127*2));

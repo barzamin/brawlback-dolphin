@@ -300,7 +300,7 @@ void CEXIBrawlback::handleLocalPadData(u8* data)
   auto frame = playerFramedata.frame;
   u8 playerIdx = playerFramedata.playerIdx;
 
-  if (frame == GAME_START_FRAME)
+  if (frame == GAME_START_FRAME && !this->hasGameStarted)
   {
     // push framedatas for first few delay frames
     for (int i = GAME_START_FRAME; i < FRAME_DELAY; i++)
@@ -1316,7 +1316,7 @@ void CEXIBrawlback::handleEndOfReplay()
 // recieve data from game into emulator
 void CEXIBrawlback::DMAWrite(u32 address, u32 size)
 {
-  // INFO_LOG_FMT(BRAWLBACK, "DMAWrite size: %u\n", size);
+  // INFO_LOG_FMT(BRAWLBACK, "DMAWrite size: {}\n", size);
   u8* mem = Memory::GetPointer(address);
 
   if (!mem)
@@ -1329,6 +1329,7 @@ void CEXIBrawlback::DMAWrite(u32 address, u32 size)
   u8 command_byte = mem[0];  // first byte is always cmd byte
   u8* payload = &mem[1];     // rest is payload
 
+  // INFO_LOG_FMT(BRAWLBACK, "DMAWrite: command: {}", (u8)command_byte);
   // no payload
   if (size <= 1)
     payload = nullptr;
@@ -1337,7 +1338,7 @@ void CEXIBrawlback::DMAWrite(u32 address, u32 size)
   switch (command_byte)
   {
   case CMD_UNKNOWN:
-    INFO_LOG_FMT(BRAWLBACK, "Unknown DMAWrite command byte!");
+    // INFO_LOG_FMT(BRAWLBACK, "Unknown DMAWrite command byte!");
     break;
   case CMD_ONLINE_INPUTS:
     // INFO_LOG_FMT(BRAWLBACK, "DMAWrite: CMD_ONLINE_INPUTS");
