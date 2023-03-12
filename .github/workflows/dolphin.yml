@@ -1,0 +1,139 @@
+name: Dolphin
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  mac:
+    name: MacOS 12
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Dependencies
+      run: |
+           git submodule update --init --recursive
+           brew install qt6
+    
+    - name: Configure CMake
+      run: |
+           mkdir build
+           cd build
+           cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
+           
+    - name: Build
+      run: |
+           cd build
+           make -j$(nproc)
+           
+  windows:
+      name: Windows
+      runs-on: windows-latest
+      strategy:
+        fail-fast: false
+        matrix:
+          build_type: [Test]
+          include:
+            - build_type: Test
+              artifact_name: windows-test
+              build_config: Release
+      steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: git submodule update --init --recursive
+      - name: 'Fetch Git Tags'
+        shell: bash
+        if: success()
+        run: |
+             git fetch --prune --unshallow
+             echo "GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
+             echo "GIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+             echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+             echo "CURR_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+      - name: Build (msbuild)
+        shell: cmd
+        run: |
+             call "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvarsall.bat" x64
+             msbuild -v:m -m -p:Platform=x64,Configuration=${{ matrix.build_config }} Source\dolphin-emu.sln
+      - name: "Prepare ${{ matrix.build_type }} Artifact"
+        working-directory: ${{ github.workspace }}
+        run: |
+             Xcopy /Y /E /I .\Data\Sys .\Binary\x64\Sys
+             cd .\Binary\x64\
+             fsutil file createnew FIX-VCRUNTIME140-ERROR.txt 0
+             echo "Download and install this: https://aka.ms/vs/17/release/vc_redist.x64.exe" > .\FIX-VCRUNTIME140-ERROR.txt
+      - name: "Package ${{ matrix.build_type}} Dolphin"
+        working-directory: ${{ github.workspace }}
+        run: |
+             $FILE_NAME="${{ env.CURR_DATE }}-${{ env.GIT_HASH }}-${{ env.GIT_TAG }}-${{ matrix.artifact_name }}.zip"
+             mkdir artifact
+             cd .\Binary\x64\
+             attrib +r Sys\*.* /s
+             fsutil file createnew portable.txt 0
+             7z a $FILE_NAME .\*
+             move $FILE_NAME ..\..\artifact\
+      - name: "Publish"
+        if: success()
+        uses: actions/upload-artifact@v2-preview
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: "./artifact/"
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    strategy:
+        fail-fast: false
+        matrix:
+          build_type: [Test]
+          include:
+            - build_type: Test
+              artifact_name: linux-test
+              build_config: Release
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Dependencies
+      run: |
+           git submodule update --init --recursive
+           sudo apt-get update
+           sudo apt install build-essential git cmake ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libevdev-dev libusb-1.0-0-dev libxrandr-dev libxi-dev libpangocairo-1.0-0 qt6-base-private-dev libbluetooth-dev libasound2-dev libpulse-dev libgl1-mesa-dev -y
+           sudo apt install libudev-dev libsystemd-dev -y || sudo apt install libeudev-dev -y
+    - name: 'Fetch Git Tags'
+      shell: bash
+      if: success()
+      run: |
+            git fetch --prune --unshallow
+            echo "GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
+            echo "GIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+            echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+            echo "CURR_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+    - name: Configure CMake
+      run: |
+           mkdir build
+           cd build
+           cmake .. -DLINUX_LOCAL_DEV=true -DCMAKE_PREFIX_PATH=./Externals/Qt/Qt6.3.0/x64/lib/cmake/
+
+    - name: Build
+      run: |
+           cd build
+           make -j$(nproc)
+           cp -r ../Data/Sys/ Binaries/
+           touch Binaries/portable.txt
+    - name: "Package"
+      if: success()
+      working-directory: ${{ github.workspace }}
+      run: |
+           mkdir artifact
+           FILE_NAME=${{ env.CURR_DATE }}-${{ env.GIT_HASH }}-${{ env.GIT_TAG }}-${{ matrix.artifact_name }}.zip
+           zip -r "${FILE_NAME}" "./build/Binaries"
+           mv "${FILE_NAME}" ./artifact/
+    - name: "Publish"
+      if: success()
+      uses: actions/upload-artifact@v2-preview
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: "./artifact/"
