@@ -21,6 +21,20 @@ MemRegions* memRegions = new MemRegions();
 // --- Mutexes
 std::mutex read_queue_mutex = std::mutex();
 std::mutex remotePadQueueMutex = std::mutex();
+
+constexpr size_t MAX_HEAPNAME_SIZE2 = 30;
+
+#pragma pack(push, 4)
+struct MemoryTest
+{
+  u8 nameBuffer[MAX_HEAPNAME_SIZE2];
+  u8 nameSize = 0;
+  u32 address;
+  u32 size;
+  u32 frameNum;
+};
+#pragma pack(pop)
+std::vector<std::vector<std::vector<MemoryTest>>> replaysMemory;
 // -------------------------------
 void writeToFile(std::string filename, uint8_t* ptr, size_t len)
 {
@@ -1324,29 +1338,27 @@ void SwapEndianSavestateMemRegionInfo(SavestateMemRegionInfo& memRegion)
   memRegion.size = swap_endian(memRegion.size);
 }
 
+void SwapEndianMemoryTest(MemoryTest& memRegion)
+{
+  memRegion.address = swap_endian(memRegion.address);
+  memRegion.size = swap_endian(memRegion.size);
+  memRegion.frameNum = swap_endian(memRegion.frameNum);
+}
+u32 currentFrame = -1;
+u32 currentReplay = -1;
 void CEXIBrawlback::handleDumpAll(u8* payload)
 {
-  SavestateMemRegionInfo dumpAll;
-  memcpy(&dumpAll, payload, sizeof(SavestateMemRegionInfo));
-  SwapEndianSavestateMemRegionInfo(dumpAll);
+  MemoryTest dumpAll;
+  memcpy(&dumpAll, payload, sizeof(MemoryTest));
+  SwapEndianMemoryTest(dumpAll);
 
-  SlippiUtility::Savestate::ssBackupLoc addDumpAll;
-  addDumpAll.data = nullptr;
-  addDumpAll.startAddress = dumpAll.address;
-  addDumpAll.endAddress = dumpAll.address + dumpAll.size;
-  addDumpAll.regionName = std::string((char*)dumpAll.nameBuffer, dumpAll.nameSize);
-
-  if (addDumpAll.regionName == "Fighter1Resoruce" || addDumpAll.regionName == "Fighter2Resoruce")
+  if (dumpAll.frameNum != currentFrame)
   {
-    if (dumpAll.size <= 0x80)
-    {
-      memRegions->memRegions.push_back(addDumpAll);
-    }
+    currentFrame = dumpAll.frameNum;
+    std::vector<MemoryTest> curFrame;
+    replaysMemory[currentReplay].push_back(curFrame);
   }
-  else
-  {
-    memRegions->memRegions.push_back(addDumpAll);
-  }
+  replaysMemory[currentReplay].back().push_back(dumpAll);
 }
 void CEXIBrawlback::handleAlloc(u8* payload)
 {
@@ -1377,7 +1389,30 @@ void CEXIBrawlback::handleDealloc(u8* payload)
     memRegions->memRegions.erase(memRegions->memRegions.begin() + index);
   }
 }
-// recieve data from game into emulator
+void CEXIBrawlback::handleReplayStart()
+{
+  std::vector<std::vector<MemoryTest>> replay;
+  replaysMemory.push_back(replay);
+  currentReplay++;
+}
+
+void CEXIBrawlback::handleExitReplayMenu()
+{
+  std::ofstream myfile;
+  myfile.open("memoryregions.txt");
+  for (int i = 0; i < replaysMemory.size(); i++)
+  {
+    for (int f = 0; f < replaysMemory[i].size(); f++)
+    {
+      for (int g = 0; g < replaysMemory[i][f].size(); g++)
+      {
+        myfile << std::string((char*)replaysMemory[i][f][g].nameBuffer, replaysMemory[i][f][g].nameSize) << ": " << replaysMemory[i][f][g].address << " - " << replaysMemory[i][f][g].address + replaysMemory[i][f][g].size << std::endl;
+      }
+    }
+  }
+  myfile.close();
+}
+    // recieve data from game into emulator
 void CEXIBrawlback::DMAWrite(u32 address, u32 size)
 {
   // INFO_LOG_FMT(BRAWLBACK, "DMAWrite size: %u\n", size);
@@ -1449,6 +1484,12 @@ void CEXIBrawlback::DMAWrite(u32 address, u32 size)
     break;
   case CMD_SEND_DEALLOCS:
     handleDealloc(payload);
+    break;
+  case CMD_START_REPLAY:
+    handleReplayStart();
+    break;
+  case CMD_EXIT_REPLAY_MENU:
+    handleExitReplayMenu();
     break;
 
   // just using these CMD's to track frame times lol

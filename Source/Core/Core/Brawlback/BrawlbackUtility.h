@@ -57,6 +57,8 @@ namespace Brawlback {
       CMD_SEND_ALLOCS = 30,
       CMD_SEND_DEALLOCS = 31,
       CMD_SEND_DUMPALL = 32,
+      CMD_START_REPLAY = 33,
+      CMD_EXIT_REPLAY_MENU = 34,
 
       CMD_FIND_OPPONENT = 5,
       CMD_START_MATCH = 13,

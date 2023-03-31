@@ -46,6 +46,8 @@ private:
   void handleDumpAll(u8*);
   void handleAlloc(u8* payload);
   void handleDealloc(u8* payload);
+  void handleReplayStart();
+  void handleExitReplayMenu();
   void handleDumpList(u8* payload);
   void handleGetNextFrame(u8* payload, int index);
   void handleNumReplays();

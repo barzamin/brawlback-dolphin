@@ -85,24 +85,43 @@ void BrawlbackSavestate::Capture()
 
 void BrawlbackSavestate::Load(std::vector<PreserveBlock> blocks)
 {
+    // Back up regions of game that should stay the same between savestates
 
-  // Restore memory blocks
-  for (auto it = backupLocs.begin(); it != backupLocs.end(); ++it)
-  {
-    auto size = it->endAddress - it->startAddress;
-    // if (it->endAddress < LOW_BOUND_MEM)
-    //{
-    //    Memory::CopyToEmu(it->startAddress, it->data, it->endAddress);  // emu -> game
-    //}
-    // else
-    //{
-    Memory::CopyToEmu(it->startAddress, it->data, size);  // emu -> game
-                                                          //}
-  }
+    for (auto it = blocks.begin(); it != blocks.end(); ++it)
+    {
+        if (!preservationMap.count(*it))  // if this PreserveBlock is NOT in our preservationMap
+        {
+          // TODO: Clear preservation map when game ends
+          preservationMap[*it] =
+              std::vector<u8>(it->length);  // init new entry at this PreserveBlock key
+        }
+
+        Memory::CopyFromEmu(&preservationMap[*it][0], it->address, it->length);
+    }
+
+    // Restore memory blocks
+    for (auto it = backupLocs.begin(); it != backupLocs.end(); ++it)
+    {
+        auto size = it->endAddress - it->startAddress;
+        // if (it->endAddress < LOW_BOUND_MEM)
+        //{
+        //    Memory::CopyToEmu(it->startAddress, it->data, it->endAddress);  // emu -> game
+        //}
+        // else
+        //{
+        Memory::CopyToEmu(it->startAddress, it->data, size);  // emu -> game
+                                                              //}
+    }
 
     //// Restore audio
-    //u8 *ptr = &dolphinSsBackup[0];
-    //PointerWrap p(&ptr, PointerWrap::MODE_READ);
-    //getDolphinState(p);
+    // u8 *ptr = &dolphinSsBackup[0];
+    // PointerWrap p(&ptr, PointerWrap::MODE_READ);
+    // getDolphinState(p);
+
+    // Restore preservation blocks
+    for (auto it = blocks.begin(); it != blocks.end(); ++it)
+    {
+        Memory::CopyToEmu(it->address, &preservationMap[*it][0], it->length);
+    }
   
 }
