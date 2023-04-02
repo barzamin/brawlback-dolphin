@@ -34,7 +34,7 @@ struct MemoryTest
   u32 frameNum;
 };
 #pragma pack(pop)
-std::vector<std::vector<std::vector<MemoryTest>>> replaysMemory;
+std::vector<std::vector<MemoryTest>> replayMemory;
 // -------------------------------
 void writeToFile(std::string filename, uint8_t* ptr, size_t len)
 {
@@ -1356,9 +1356,9 @@ void CEXIBrawlback::handleDumpAll(u8* payload)
   {
     currentFrame = dumpAll.frameNum;
     std::vector<MemoryTest> curFrame;
-    replaysMemory[currentReplay].push_back(curFrame);
+    replayMemory.push_back(curFrame);
   }
-  replaysMemory[currentReplay].back().push_back(dumpAll);
+  replayMemory.back().push_back(dumpAll);
 }
 void CEXIBrawlback::handleAlloc(u8* payload)
 {
@@ -1391,26 +1391,31 @@ void CEXIBrawlback::handleDealloc(u8* payload)
 }
 void CEXIBrawlback::handleReplayStart()
 {
-  std::vector<std::vector<MemoryTest>> replay;
-  replaysMemory.push_back(replay);
-  currentReplay++;
-}
-
-void CEXIBrawlback::handleExitReplayMenu()
-{
-  std::ofstream myfile;
-  myfile.open("memoryregions.txt");
-  for (int i = 0; i < replaysMemory.size(); i++)
+  if (currentReplay >= 0)
   {
-    for (int f = 0; f < replaysMemory[i].size(); f++)
+    std::ofstream myfile;
+    myfile.open("memoryregions" + std::to_string(currentReplay) + ".txt");
+    myfile << "REPLAY: " << currentReplay << std::endl;
+    for (int f = 0; f < replayMemory.size(); f++)
     {
-      for (int g = 0; g < replaysMemory[i][f].size(); g++)
+      myfile << "FRAME: " << f << std::endl;
+      for (int g = 0; g < replayMemory[f].size(); g++)
       {
-        myfile << std::string((char*)replaysMemory[i][f][g].nameBuffer, replaysMemory[i][f][g].nameSize) << ": " << replaysMemory[i][f][g].address << " - " << replaysMemory[i][f][g].address + replaysMemory[i][f][g].size << std::endl;
+        std::stringstream hexstream;
+        hexstream.imbue(std::locale("C"));
+        hexstream << std::string((char*)replayMemory[f][g].nameBuffer,
+                                 replayMemory[f][g].nameSize)
+                  << ": 0x" << std::setw(8) << std::setfill('0') << std::hex
+                  << replayMemory[f][g].address << " - 0x" << std::setw(8) << std::setfill('0')
+                  << std::hex << replayMemory[f][g].address + replayMemory[f][g].size
+                  << std::endl;
+        myfile << hexstream.str();
       }
     }
+    myfile.close();
   }
-  myfile.close();
+  replayMemory.clear();
+  currentReplay++;
 }
     // recieve data from game into emulator
 void CEXIBrawlback::DMAWrite(u32 address, u32 size)
@@ -1487,9 +1492,6 @@ void CEXIBrawlback::DMAWrite(u32 address, u32 size)
     break;
   case CMD_START_REPLAY:
     handleReplayStart();
-    break;
-  case CMD_EXIT_REPLAY_MENU:
-    handleExitReplayMenu();
     break;
 
   // just using these CMD's to track frame times lol
